@@ -78,6 +78,10 @@ def system_startup(cfg):
     Set all required and interesting environment variables.
     """
     torch.backends.cudnn.benchmark = cfg.impl.benchmark
+    if cfg.impl.sharing_strategy not in torch.multiprocessing.get_all_sharing_strategies():
+        raise ValueError(
+            f"Config specifies sharing strategy {cfg.impl.sharing_strategy} which is not supported. Supported are {torch.multiprocessing.get_all_sharing_strategies()}."
+        )
     torch.multiprocessing.set_sharing_strategy(cfg.impl.sharing_strategy)
 
     if cfg.impl.tf32_allowed:
@@ -92,7 +96,14 @@ def system_startup(cfg):
             set_jit_instructions(cfg.impl.jit_instruction_type)
         else:
             set_jit_instructions("default")
-    multiprocess.set_start_method("forkserver")
+
+    if cfg.impl.multiprocess_start_method not in multiprocess.context._concrete_contexts.keys():
+        raise ValueError(
+            f"Config specifies multiprocess start method {cfg.impl.multiprocess_start_method} which is not supported. "
+            f"Supported are {list(multiprocess.context._concrete_contexts.keys())}."
+        )
+    multiprocess.set_start_method(cfg.impl.multiprocess_start_method)
+
     if cfg.impl.local_staging_dir is not None:
         tmp_path = os.path.join(cfg.impl.local_staging_dir, "tmp")
         os.makedirs(tmp_path, exist_ok=True)

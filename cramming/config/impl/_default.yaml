@@ -47,6 +47,7 @@ trace_shape:
 no_jit_compilation: False # Optionaly disable all torch.jit calls
 
 # Dataloader multiprocessing
+multiprocess_start_method: spawn # argument for multiprocess.set_start_method
 pad_to_multiple_of: 8 # padding in dataloader during downstream
 shuffle_in_dataloader: False # There is still shuffling in the preprocessing pipeline.
 pin_memory: True
@@ -58,7 +59,7 @@ default_precision: float # needs to be a pytorch datatype
 
 # Distributed training
 backend: nccl
-sharing_strategy: file_descriptor
+sharing_strategy: file_system
 
 # Misc:
 enable_huggingface_offline_mode: False
